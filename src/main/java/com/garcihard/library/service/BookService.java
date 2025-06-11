@@ -13,9 +13,9 @@ public interface BookService {
 
     List<BookResponseDTO> getALl();
 
-    Optional<BookResponseDTO> getById(UUID id) throws Exception;
+    BookResponseDTO getById(UUID id);
 
-    BookResponseDTO updateById(UUID id, BookRequestDTO dto) throws Exception;
+    BookResponseDTO updateById(UUID id, BookRequestDTO dto);
 
-    void deleteById(UUID id) throws Exception;
+    void deleteById(UUID id);
 }

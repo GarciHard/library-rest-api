@@ -3,9 +3,11 @@ package com.garcihard.library.controller;
 import com.garcihard.library.model.dto.BookRequestDTO;
 import com.garcihard.library.model.dto.BookResponseDTO;
 import com.garcihard.library.service.BookService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
@@ -22,48 +24,40 @@ public class BookController {
     private final BookService bookService;
 
     @PostMapping
-    public ResponseEntity<?> createNewBook(@RequestBody BookRequestDTO dto) {
+    public ResponseEntity<?> createNewBook(@Valid @RequestBody BookRequestDTO dto) {
         BookResponseDTO response = bookService.create(dto);
-        return ResponseEntity.created(URI.create(BASE_URI)).body(response);
+
+        // Construye la URI del nuevo recurso: /api/v1/books/{id_del_nuevo_libro}
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(response.id())
+                .toUri();
+
+        return ResponseEntity.created(location).body(response);
     }
 
     @GetMapping
     public ResponseEntity<?> getAllBooks() {
-        List<BookResponseDTO> response = bookService.getALl();
-        return ResponseEntity.ok().body(response);
+        return ResponseEntity.ok()
+                .body(bookService.getALl());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getBookById(@PathVariable UUID id) {
-        Optional<BookResponseDTO> response;
-        try {
-            response = bookService.getById(id);
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok().body(response);
+        return ResponseEntity.ok()
+                .body(bookService.getById(id));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateBookById(@PathVariable UUID id, @RequestBody BookRequestDTO dto) {
-        BookResponseDTO response;
-        try {
-            response = bookService.updateById(id,dto);
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok().body(response);
+    public ResponseEntity<?> updateBookById(@PathVariable UUID id, @Valid @RequestBody BookRequestDTO dto) {
+        return ResponseEntity.ok()
+                .body(bookService.updateById(id, dto));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteBookById(@PathVariable UUID id) {
-        try {
-            bookService.deleteById(id);
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
-
+        bookService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 }

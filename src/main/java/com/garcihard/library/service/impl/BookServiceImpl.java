@@ -1,5 +1,6 @@
 package com.garcihard.library.service.impl;
 
+import com.garcihard.library.exception.custom.BookNotFoundException;
 import com.garcihard.library.mapper.BookMapper;
 import com.garcihard.library.model.Book;
 import com.garcihard.library.model.dto.BookRequestDTO;
@@ -24,7 +25,6 @@ public class BookServiceImpl implements BookService {
     @Override
     public BookResponseDTO create(BookRequestDTO request) {
         Book entity = bookMapper.toEntity(request);
-
         Book responseEntity = bookRepository.save(entity);
 
         return bookMapper.toDto(responseEntity);
@@ -41,36 +41,29 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public Optional<BookResponseDTO> getById(UUID id) throws Exception {
-        return Optional.ofNullable(
-                bookMapper.toDto(bookRepository.findById(id)
-                        .orElseThrow(Exception::new)
-                )
-        );
+    public BookResponseDTO getById(UUID id) {
+        return bookRepository.findById(id)
+                .map(bookMapper::toDto)
+                .orElseThrow(() -> new BookNotFoundException("Book not found with id: " + id));
+
     }
 
     @Override
-    public BookResponseDTO updateById(UUID id, BookRequestDTO dto) throws Exception {
-        BookResponseDTO response;
+    public BookResponseDTO updateById(UUID id, BookRequestDTO dto) {
+        Book persistedBook = bookRepository.findById(id)
+                .orElseThrow(() -> new BookNotFoundException("Book not found with id: " + id));
 
-        Optional<BookResponseDTO> persistedDto = Optional.of(getById(id))
-                .orElseThrow(Exception::new);
+        persistedBook.setTitle(dto.title());
+        persistedBook.setAuthor(dto.author());
+        persistedBook.setIsbn(dto.isbn());
 
-        Book entity = bookMapper.DtoToEntity(persistedDto.get());
-        entity.setTitle(dto.title());
-        entity.setAuthor(dto.author());
-        entity.setIsbn(dto.isbn());
-
-        response = bookMapper.toDto(bookRepository.save(entity));
-
-        return response;
+        Book updatedBook = bookRepository.save(persistedBook);
+        return bookMapper.toDto(updatedBook);
     }
 
     @Override
-    public void deleteById(UUID id) throws Exception {
-        Optional<BookResponseDTO> persistedDto = Optional.of(getById(id))
-                .orElseThrow(Exception::new);
-
+    public void deleteById(UUID id) {
+        getById(id);
         bookRepository.deleteById(id);
     }
 }
