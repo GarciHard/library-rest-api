@@ -19,7 +19,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class Book extends BaseEntity implements Serializable {
 
-    private final String ISBN_PATTERN = "^(?=(?:\\D*\\d){10}(?:(?:\\D*\\d){3})?$)[\\d-]+$";
+    private static final String ISBN_PATTERN = "^(?=(?:\\D*\\d){10}(?:(?:\\D*\\d){3})?$)[\\d-]+$";
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
