@@ -1,7 +1,12 @@
 package com.garcihard.library.exception.custom;
 
-public class BookNotFoundException extends RuntimeException{
-    public BookNotFoundException(String message) {
-        super(message);
+import java.util.UUID;
+
+public class BookNotFoundException extends RuntimeException {
+
+    private static final String NOT_FOUND_MSG = "Book Not Found With id: ";
+
+    public BookNotFoundException(UUID id) {
+        super(BookNotFoundException.NOT_FOUND_MSG + id);
     }
 }

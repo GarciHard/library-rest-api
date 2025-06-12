@@ -7,14 +7,16 @@ import com.garcihard.library.model.dto.BookRequestDTO;
 import com.garcihard.library.model.dto.BookResponseDTO;
 import com.garcihard.library.repository.BookRepository;
 import com.garcihard.library.service.BookService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class BookServiceImpl implements BookService {
@@ -44,14 +46,13 @@ public class BookServiceImpl implements BookService {
     public BookResponseDTO getById(UUID id) {
         return bookRepository.findById(id)
                 .map(bookMapper::toDto)
-                .orElseThrow(() -> new BookNotFoundException("Book not found with id: " + id));
-
+                .orElseThrow(() -> new BookNotFoundException(id));
     }
 
     @Override
     public BookResponseDTO updateById(UUID id, BookRequestDTO dto) {
         Book persistedBook = bookRepository.findById(id)
-                .orElseThrow(() -> new BookNotFoundException("Book not found with id: " + id));
+                .orElseThrow(() -> new BookNotFoundException(id));
 
         persistedBook.setTitle(dto.title());
         persistedBook.setAuthor(dto.author());
@@ -61,9 +62,16 @@ public class BookServiceImpl implements BookService {
         return bookMapper.toDto(updatedBook);
     }
 
+    @Transactional // ¡Importante! Las operaciones con @Modifying deben ser transaccionales.
     @Override
     public void deleteById(UUID id) {
-        getById(id);
-        bookRepository.deleteById(id);
+        log.debug("Starting deletion for Book with id: {}", id);
+
+        int rowsAffected = bookRepository.deleteAndReturnStatus(id);
+        if (rowsAffected == 0) {
+            // Si no se borró ninguna fila, es porque el libro con ese ID no existía.
+            throw new BookNotFoundException(id);
+        }
+
     }
 }

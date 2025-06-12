@@ -4,7 +4,6 @@ import com.garcihard.library.model.dto.BookRequestDTO;
 import com.garcihard.library.model.dto.BookResponseDTO;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public interface BookService {

@@ -11,6 +11,4 @@ public interface BookMapper {
     BookResponseDTO toDto(Book entity);
 
     Book toEntity(BookRequestDTO dto);
-
-    Book DtoToEntity(BookResponseDTO dto);
 }
